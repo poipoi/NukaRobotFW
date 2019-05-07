@@ -36,8 +36,8 @@ void tick10ms() {
       flipCount = random(500, 1500);
     }
   } else {
-    if ((tickCountMs % nextMotionCount) < 1000) {
-      int randVal = random(0, flipCount);
+    if ((tickCountMs % nextMotionCount) < flipCount) {
+      int randVal = random(0, 1000);
       float newAngle = nowAngle + randVal * 1.0 / 1000.0;
       rotateServo(newAngle);
     } else if ((tickCountMs % nextMotionCount) < 2000) {
