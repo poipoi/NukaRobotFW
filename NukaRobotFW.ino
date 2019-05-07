@@ -16,39 +16,25 @@ void rotateServo(float angle) {
 #define MOTION_MODE_FAST  (0)
 #define MOTION_MODE_SLOW  (1)
 
-uint16_t motionMode = MOTION_MODE_SLOW;
 uint32_t tickCountMs;
-uint32_t nextMotionCount = 8000;
-bool isIncreece = false;
-uint32_t flipCount = 1000;
-void tick10ms() {
+float movingRatio = 2.0;
+uint32_t pikuCycleCount = 8000;
+uint32_t flipCycleCount = 30000;
 
-  if (motionMode == MOTION_MODE_FAST) {
-    if ((tickCountMs % nextMotionCount) == 0) {
-      // piku moving
-      rotateServo(random(5, 20));
-    }
-  
-    if ((tickCountMs % nextMotionCount) == 100) {
-      rotateServo(0);
-      nextMotionCount = random(10, 30) * 1000;
-      motionMode = random(0, 2);
-      flipCount = random(500, 1500);
-    }
-  } else {
-    if ((tickCountMs % nextMotionCount) < flipCount) {
-      int randVal = random(0, 1000);
-      float newAngle = nowAngle + randVal * 1.0 / 1000.0;
-      rotateServo(newAngle);
-    } else if ((tickCountMs % nextMotionCount) < 2000) {
-      int randVal = random(0, 1000);
-      float newAngle = nowAngle + -randVal * 1.0 / 1000.0;
-      rotateServo(newAngle);
-    } else if ((tickCountMs % nextMotionCount) == 2000) {
-      nextMotionCount = random(10, 30) * 1000;
-      motionMode = random(0, 2);
-      flipCount = random(500, 1500);
-    }
+bool isFlip = true;
+void tick10ms() {
+  if ((tickCountMs % pikuCycleCount) < 400) {
+    rotateServo(nowAngle + (movingRatio * (isFlip ? 1 : -1)));
+  } else if ((tickCountMs % pikuCycleCount) < 800) {
+    rotateServo(nowAngle - (movingRatio * (isFlip ? 1 : -1)));
+  } else if ((tickCountMs % pikuCycleCount) == 800) {
+    pikuCycleCount = random(6000, 10000);
+  }
+
+  if ((tickCountMs % flipCycleCount) == 0) {
+    isFlip = !isFlip;
+    rotateServo(isFlip ? 0 : 180);
+    flipCycleCount = random(20000, 40000);
   }
   
   tickCountMs += 10;
