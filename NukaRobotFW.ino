@@ -10,25 +10,21 @@ void rotateServo(float angle) {
 
   nowAngle = angle;
 //  Serial.println(angle);
-  nukaservo.write(angle); // サーボを動かすコード
+  nukaservo.writeMicroseconds(1800.0 * angle / 180.0 + 500); // サーボを動かすコード
 }
 
 uint32_t tickCountMs;
 uint32_t nextReverseCount = 800;
 bool isIncreece = false;
-float newAngle;
 void tick10ms() {
   if ((tickCountMs % nextReverseCount) == 0) {
       isIncreece = !isIncreece;
       nextReverseCount = random(60, 100) * 10;
-      rotateServo(newAngle);
   }
   
-  //int randVal = random(-1000, 1000);
-  //float newAngle = (isIncreece ? 1 : -1) * randVal * 0.2 / 1000.0;
-  int randVal = random(-180, 180);
-  newAngle = (isIncreece ? 1 : -1) * randVal;
-  //rotateServo(newAngle);
+  int randVal = random(0, 1000);
+  float newAngle = nowAngle + (isIncreece ? 1 : -1) * randVal * 0.2 / 1000.0;
+  rotateServo(newAngle);
   
   tickCountMs += 10;
 }
