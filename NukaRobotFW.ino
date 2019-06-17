@@ -21,20 +21,27 @@ float movingRatio = 2.0;
 uint32_t pikuCycleCount = 8000;
 uint32_t flipCycleCount = 30000;
 
+uint32_t flipRefCount = 0;
+uint32_t pikuRefCount = 0;
+uint32_t pikuRange = 150;
+
 bool isFlip = true;
 void tick10ms() {
-  if ((tickCountMs % pikuCycleCount) < 400) {
+  if ((tickCountMs - pikuRefCount) < pikuRange) {
     rotateServo(nowAngle + (movingRatio * (isFlip ? 1 : -1)));
-  } else if ((tickCountMs % pikuCycleCount) < 800) {
+  } else if ((tickCountMs - pikuRefCount) < (pikuRange + random(50, 200))) {
     rotateServo(nowAngle - (movingRatio * (isFlip ? 1 : -1)));
-  } else if ((tickCountMs % pikuCycleCount) == 800) {
-    pikuCycleCount = random(6000, 10000);
+  } else if ((tickCountMs - pikuRefCount) >= pikuCycleCount) {
+    pikuCycleCount = random(1000, 10000);
+    pikuRefCount = tickCountMs;
+    pikuRange = random(50, 200);
   }
 
-  if ((tickCountMs % flipCycleCount) == 0) {
+  if ((tickCountMs - flipRefCount) >= flipCycleCount) {
     isFlip = !isFlip;
     rotateServo(isFlip ? 0 : 180);
     flipCycleCount = random(20000, 40000);
+    flipRefCount = tickCountMs;
   }
   
   tickCountMs += 10;
