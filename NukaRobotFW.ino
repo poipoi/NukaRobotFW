@@ -13,42 +13,41 @@ void rotateServo(float angle) {
   nukaservo.writeMicroseconds(1800.0 * angle / 180.0 + 500); // サーボを動かすコード
 }
 
-#define MOTION_MODE_FAST  (0)
-#define MOTION_MODE_SLOW  (1)
-
-uint16_t motionMode = MOTION_MODE_SLOW;
 uint32_t tickCountMs;
+uint32_t motionRefCount = 0;
 uint32_t nextMotionCount = 8000;
+uint32_t motionRange = 350;
+
+bool flipDir = false;
+uint32_t flipRefCount = 0;
+uint32_t nextFlipCount = 10000;
+
 bool isIncreece = false;
-uint32_t flipCount = 1000;
 void tick10ms() {
 
-  if (motionMode == MOTION_MODE_FAST) {
-    if ((tickCountMs % nextMotionCount) == 0) {
-      // piku moving
-      rotateServo(random(5, 20));
+  if ((tickCountMs - motionRefCount) < motionRange) {
+    if (flipDir) {
+      rotateServo(nowAngle - 1);
+    } else {
+      rotateServo(nowAngle + 1);
     }
-  
-    if ((tickCountMs % nextMotionCount) == 100) {
-      rotateServo(0);
-      nextMotionCount = random(10, 30) * 1000;
-      motionMode = random(0, 2);
-      flipCount = random(500, 1500);
+  } else if ((tickCountMs - motionRefCount) < (motionRange * 2)) {
+    if (flipDir) {
+      rotateServo(nowAngle + 1);
+    } else {
+      rotateServo(nowAngle - 1);
     }
-  } else {
-    if ((tickCountMs % nextMotionCount) < flipCount) {
-      int randVal = random(0, 1000);
-      float newAngle = nowAngle + randVal * 1.0 / 1000.0;
-      rotateServo(newAngle);
-    } else if ((tickCountMs % nextMotionCount) < 2000) {
-      int randVal = random(0, 1000);
-      float newAngle = nowAngle + -randVal * 1.0 / 1000.0;
-      rotateServo(newAngle);
-    } else if ((tickCountMs % nextMotionCount) == 2000) {
-      nextMotionCount = random(10, 30) * 1000;
-      motionMode = random(0, 2);
-      flipCount = random(500, 1500);
-    }
+  } else if ((tickCountMs - motionRefCount) >= nextMotionCount) {
+    nextMotionCount = random(5000, 10000);
+    motionRange = random(300, 1000);
+    motionRefCount = tickCountMs;
+  }
+
+  if ((tickCountMs - flipRefCount) >= nextFlipCount) {
+    rotateServo(flipDir ? 0 : 180);
+    flipDir = !flipDir;
+    nextFlipCount = random(10000, 20000);
+    flipRefCount = tickCountMs;
   }
   
   tickCountMs += 10;
